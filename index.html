@@ -92,7 +92,7 @@
     <div class="container">
         <h1>🤖 Smart AI Assistant</h1>
         <div class="status" id="status">
-            <p>Running on localhost:1234</p>
+            <p>Powered by OpenRouter AI</p>
         </div>
         <div class="chat-box" id="chatBox">
             <p class="ai-message message">Hello! I'm your Smart AI Assistant. How can I help you today?</p>
@@ -136,15 +136,30 @@
                 userDiv.textContent = userMessage;
                 chatBox.appendChild(userDiv);
                 
-                // Simulate AI response
-                setTimeout(() => {
-                    const aiDiv = document.createElement('div');
-                    aiDiv.className = 'message ai-message';
-                    aiDiv.textContent = 'I received your message: "' + userMessage + '". This is a demo response. Connect to Ollama for real AI responses!';
-                    chatBox.appendChild(aiDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }, 500);
-                
+        // Call Netlify Function for AI response
+        fetch('/.netlify/functions/ollama-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: userMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'message ai-message';
+            aiDiv.textContent = data.reply || 'Sorry, I couldn\'t generate a response.';
+            chatBox.appendChild(aiDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message ai-message';
+            errorDiv.textContent = 'Sorry, there was an error processing your request.';
+            chatBox.appendChild(errorDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });                
                 input.value = '';
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
